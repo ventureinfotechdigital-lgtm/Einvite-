@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Remix Remix 3D Wedding Invitation Creator",
+  "description": "Create 3D animated wedding invitation websites with interactive unrolling scroll, royal palace parallax, scratch-to-reveal photo, 3D gallery, fireworks, and RSVP.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
