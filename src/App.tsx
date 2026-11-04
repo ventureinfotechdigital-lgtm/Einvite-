@@ -25,6 +25,8 @@ import {
   CreditCard,
   ShieldCheck,
   Tag,
+  Lock,
+  Check,
 } from 'lucide-react';
 
 export default function App() {
@@ -155,6 +157,122 @@ export default function App() {
 
   // Pure Guest View (When shared to friends & family or opened via standalone link)
   if (isGuestMode) {
+    const isGuestUnlocked = Boolean(
+      config.isUnlocked ||
+      queryParams.get('licensed') === 'true' ||
+      Boolean(queryParams.get('order'))
+    );
+    const activePrice = getPresetPrice(config.theme?.presetId);
+
+    // If invitation is locked, show royal purchase gate instead of free guest preview
+    if (!isGuestUnlocked) {
+      return (
+        <main className="relative w-full h-screen bg-[#0A0508] overflow-y-auto flex flex-col items-center justify-center p-4">
+          {/* Subtle animated background glow */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.12)_0%,transparent_70%)] pointer-events-none" />
+
+          <div className="relative w-full max-w-md bg-gradient-to-b from-neutral-900 via-neutral-950 to-black border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-5 animate-in fade-in duration-300">
+            {/* Couple Monogram Badge */}
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 via-amber-500 to-rose-600 p-0.5 mx-auto shadow-[0_0_25px_rgba(245,158,11,0.4)]">
+              <div className="w-full h-full rounded-full bg-neutral-950 flex items-center justify-center">
+                <span className="font-classic text-amber-300 font-bold text-lg">
+                  {config.monogramText || 'WED'}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-cinzel font-bold border border-amber-500/40 uppercase tracking-widest inline-flex items-center gap-1.5">
+                <Lock className="w-3 h-3 text-amber-400" />
+                Private 3D Wedding Website
+              </span>
+              <h1 className="font-classic text-2xl font-bold text-white mt-2">
+                {config.groomName} &amp; {config.brideName}
+              </h1>
+              <p className="text-xs text-amber-200/70 font-editorial italic mt-0.5">
+                {config.weddingDateFormatted} • {config.venueName}, {config.venueCity}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/60 border border-neutral-800 text-left space-y-2 text-xs text-neutral-300">
+              <p className="leading-relaxed">
+                This 3D wedding invitation is currently in <strong>private preview</strong>. Free external guest access links have been disabled.
+              </p>
+              <p className="text-[11px] text-amber-200/80">
+                To experience this animated 3D invitation website or share it with family and friends on WhatsApp, please purchase your design license.
+              </p>
+
+              <div className="pt-2 border-t border-white/10 space-y-1 text-[11px]">
+                <div className="flex items-center gap-1.5 text-neutral-300">
+                  <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Interactive 3D unrolling scroll &amp; gatefold card</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-neutral-300">
+                  <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Royal palace music serenades &amp; live blessings</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-neutral-300">
+                  <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>Unlimited guest RSVP tracking &amp; photo gallery</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="space-y-2.5 pt-1">
+              <button
+                type="button"
+                onClick={() => handleOpenPayment(activePrice)}
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-600 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-neutral-950 font-cinzel font-bold text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center justify-center gap-2 transition-all active:scale-98"
+              >
+                <Sparkles className="w-4 h-4 text-neutral-950" />
+                <span>Unlock Official Website (₹{activePrice.toLocaleString('en-IN')})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenPricing}
+                className="w-full py-2.5 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-amber-200 border border-neutral-700 font-cinzel font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <Tag className="w-3.5 h-3.5 text-amber-400" />
+                <span>Compare All 4 Packages (₹1,499 - ₹2,999)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = window.location.pathname;
+                }}
+                className="text-xs text-neutral-400 hover:text-white underline pt-1 block mx-auto transition-colors"
+              >
+                Open in Creator Studio (Edit Free in App) &rarr;
+              </button>
+            </div>
+          </div>
+
+          {/* Payment and Pricing Modals */}
+          <PaymentModal
+            isOpen={isPaymentModalOpen}
+            onClose={() => setIsPaymentModalOpen(false)}
+            config={config}
+            onPaymentSuccess={handlePaymentSuccess}
+            initialPrice={checkoutTargetPrice}
+          />
+
+          <PricingModal
+            isOpen={isPricingModalOpen}
+            onClose={() => setIsPricingModalOpen(false)}
+            config={config}
+            onSelectPlan={(price) => {
+              setIsPricingModalOpen(false);
+              handleOpenPayment(price);
+            }}
+          />
+        </main>
+      );
+    }
+
+    // Unlocked guest view: Render the official interactive 3D wedding website
     return (
       <main className="relative w-full h-screen bg-neutral-950 overflow-hidden flex flex-col items-center justify-center">
         {/* Responsive mobile width container for optimal viewing on desktop or mobile */}
@@ -165,7 +283,7 @@ export default function App() {
           />
         </div>
 
-        {/* Studio Preview Exit: Only visible when studio creator toggled Guest View for testing; guests visiting shared links have zero edit controls */}
+        {/* Studio Preview Exit: Only visible when studio creator toggled Guest View for testing */}
         {!isGuestViewQuery && (
           <button
             onClick={() => setIsGuestMode(false)}

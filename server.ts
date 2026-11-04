@@ -151,17 +151,14 @@ app.post('/api/razorpay/create-order', async (req, res) => {
 
       if (!response.ok) {
         console.warn('Razorpay Live API returned notice:', response.status, data);
-        // If live keys have pending account KYC / restrictions on Razorpay dashboard,
-        // provide fallback sandbox order so user's app checkout never gets stuck!
-        const fallbackOrderId = `order_live_sim_${Date.now()}`;
         return res.json({
           success: true,
-          orderId: fallbackOrderId,
+          orderId: null,
           amount: amountInPaise,
           currency,
           keyId: RAZORPAY_KEY_ID,
-          isDemo: true,
-          notice: data?.error?.description || 'Live Razorpay API note: Simulation fallback active for testing.',
+          isDemo: false,
+          notice: data?.error?.description || 'Direct client checkout active with live credentials.',
         });
       }
 
@@ -175,15 +172,14 @@ app.post('/api/razorpay/create-order', async (req, res) => {
       });
     } catch (apiErr: any) {
       console.warn('Network issue calling Razorpay live API:', apiErr.message);
-      const fallbackOrderId = `order_sim_${Date.now()}`;
       return res.json({
         success: true,
-        orderId: fallbackOrderId,
+        orderId: null,
         amount: amountInPaise,
         currency,
         keyId: RAZORPAY_KEY_ID,
-        isDemo: true,
-        notice: 'Network fallback simulated order.',
+        isDemo: false,
+        notice: 'Direct client checkout fallback.',
       });
     }
   } catch (error: any) {
