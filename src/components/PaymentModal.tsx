@@ -81,10 +81,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const currentPlan = getPlanByPrice(selectedPrice);
   const coupleTitle = `${config.groomName} & ${config.brideName}`;
 
-  // Guest invitation URL for the unlocked order
+  // Guest invitation URL for the unlocked order with full details & theme
   const liveInvitationUrl = `${window.location.origin}${window.location.pathname}?view=invitation&licensed=true&groom=${encodeURIComponent(
     config.groomName
-  )}&bride=${encodeURIComponent(config.brideName)}&order=${completedOrder?.licenseKey || 'ROYAL-VIP'}`;
+  )}&bride=${encodeURIComponent(config.brideName)}&date=${encodeURIComponent(
+    config.weddingDate
+  )}&venue=${encodeURIComponent(config.venueName)}&city=${encodeURIComponent(
+    config.venueCity
+  )}&theme=${encodeURIComponent(config.theme?.presetId || 'rajasthan-royal-darbar')}&order=${completedOrder?.licenseKey || 'ROYAL-VIP'}`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(liveInvitationUrl);

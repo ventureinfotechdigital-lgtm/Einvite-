@@ -41,7 +41,11 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   // Standalone official licensed guest URL (Only for unlocked orders)
   const officialGuestUrl = `${window.location.origin}${window.location.pathname}?view=invitation&licensed=true&groom=${encodeURIComponent(
     config.groomName
-  )}&bride=${encodeURIComponent(config.brideName)}&order=${config.activeOrder?.licenseKey || 'ROYAL-VIP'}`;
+  )}&bride=${encodeURIComponent(config.brideName)}&date=${encodeURIComponent(
+    config.weddingDate
+  )}&venue=${encodeURIComponent(config.venueName)}&city=${encodeURIComponent(
+    config.venueCity
+  )}&theme=${encodeURIComponent(config.theme?.presetId || 'rajasthan-royal-darbar')}&order=${config.activeOrder?.licenseKey || 'ROYAL-VIP'}`;
 
   const whatsappMessage = encodeURIComponent(
     `🌸 Shubh Vivah! 🌸\n\nYou are cordially invited to celebrate the royal wedding of ${config.groomName} & ${config.brideName}!\n\n📅 Date: ${config.weddingDateFormatted}\n📍 Venue: ${config.venueName}, ${config.venueCity}\n\n✨ Experience our Official 3D Animated Invitation Website with interactive scroll, sacred ceremonies & royal music:\n${officialGuestUrl}\n\nWith love,\n${config.groomName} & ${config.brideName}`

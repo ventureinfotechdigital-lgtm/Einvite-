@@ -9,7 +9,7 @@ import { ShareModal } from './components/ShareModal';
 import { CreateWebsiteModal } from './components/CreateWebsiteModal';
 import { PaymentModal } from './components/PaymentModal';
 import { PricingModal } from './components/PricingModal';
-import { WeddingPreset, applyPresetToConfig, getPresetPrice } from './data/weddingPresets';
+import { WeddingPreset, applyPresetToConfig, getPresetPrice, WEDDING_PRESETS } from './data/weddingPresets';
 import { weddingAudio } from './utils/audioSynth';
 import confetti from 'canvas-confetti';
 import {
@@ -36,43 +36,59 @@ export default function App() {
 
   // Load from localStorage or defaults
   const [config, setConfig] = useState<InvitationConfig>(() => {
+    const groom = queryParams.get('groom');
+    const bride = queryParams.get('bride');
+    const venue = queryParams.get('venue');
+    const city = queryParams.get('city');
+    const date = queryParams.get('date');
+    const theme = queryParams.get('theme');
+    const isLicensedParam = queryParams.get('licensed') === 'true' || Boolean(queryParams.get('order'));
+
+    let base: InvitationConfig = { ...DEFAULT_INVITATION };
+
     const saved = localStorage.getItem('3d_wedding_invitation_config');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed.id === 'royal-wedding-pulkit-shreya' || parsed.groomName === 'Pulkit') {
-          return DEFAULT_INVITATION;
+        if (parsed && typeof parsed === 'object') {
+          base = parsed;
         }
-        return parsed;
       } catch {
         // fallback
       }
     }
 
-    // Override with query params if present
-    const groom = queryParams.get('groom');
-    const bride = queryParams.get('bride');
-    const venue = queryParams.get('venue');
-    const date = queryParams.get('date');
-
-    const initial = { ...DEFAULT_INVITATION };
-    if (groom) initial.groomName = groom;
-    if (bride) initial.brideName = bride;
-    if (venue) initial.venueName = venue;
+    // Apply URL parameters (for guests and shared links)
+    if (groom) base.groomName = groom;
+    if (bride) base.brideName = bride;
+    if (venue) base.venueName = venue;
+    if (city) base.venueCity = city;
     if (date) {
-      initial.weddingDate = date;
+      base.weddingDate = date;
       const d = new Date(date);
-      initial.weddingDateFormatted = d.toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-      });
+      if (!isNaN(d.getTime())) {
+        base.weddingDateFormatted = d.toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        });
+      }
     }
     if (groom && bride) {
-      initial.monogramText = `${groom.charAt(0)}${bride.charAt(0)}`.toUpperCase();
-      initial.hashtag = `#${groom}Weds${bride}`;
+      base.monogramText = `${groom.charAt(0)}${bride.charAt(0)}`.toUpperCase();
+      base.hashtag = `#${groom}Weds${bride}`;
     }
-    return initial;
+    if (theme) {
+      const preset = WEDDING_PRESETS.find((p) => p.id === theme);
+      if (preset) {
+        base = applyPresetToConfig(preset, base);
+      }
+    }
+    if (isLicensedParam) {
+      base.isUnlocked = true;
+    }
+
+    return base;
   });
 
   const [viewMode, setViewMode] = useState<ViewMode>('split');
